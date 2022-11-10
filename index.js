@@ -33,5 +33,32 @@ app.get('/postJob',async (req,res) => {
         }
         catch (error) {    console.log(error);}
 });
+app.get('/postJob',async (req,res) => {
+        try {
+                const jwt_token= await axios.post('https://keycloak-edu-keycloak.apps.openshift-01.knowis.cloud/auth/realms/education/protocol/openid-connect/token',data,{
+                        headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'Content-Length': Buffer.byteLength(data)
+                        }
+                }    );
+                let chaName = req.query.channelName;
+                let jobId = req.query.jobReqId;
+                let config = {
+                        headers: { 'Authorization': 'Bearer ' + jwt_token.data.access_token },
+                        params: {
+                                channelName: chaName,
+                                jobReqId:jobId
+                        }
+                    }
+                const axiosInstance = axios.create({
+                        headers: {
+                        'Authorization': 'Bearer '+jwt_token.data.access_token
+                        }
+                 });
+                const response = await axiosInstance.get('https://education-dev.apps.openshift-01.knowis.cloud/jobpost/api/jobs/postJob',config);
+                res.send(response.data)
+        }
+        catch (error) {    console.log(error);}
+});
 
 app.listen(PORT, function() { console.log("Node server is running..");});
